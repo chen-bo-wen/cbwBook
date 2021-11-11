@@ -28,7 +28,11 @@ module.exports = {
                     //     ]
                     // }
                 ]
-            }
+            },
+            { 
+                text: '编程例题',items:[
+                {text:'题库1',link:'/codeExample/ku1/'}
+            ] },
         ],
         sidebar: {
             "/frontEnd/react/": [
@@ -50,7 +54,16 @@ module.exports = {
             //     }
             // ],
             "/bigData/JAVA/": [
-                ""
+                // "",
+                {
+                    title: 'java',
+                    collapsable: false,
+                    children: [
+                        { title: '案例', path: '' ,children:[
+                            { title: 'helloWord案例', path: '/bigData/JAVA/case/helloword/' },
+                        ]},
+                    ]
+                }
             ],
             "/bigData/python/": [
                 ""
@@ -64,6 +77,16 @@ module.exports = {
             ],
             "/markdown/": [
                 ""
+            ],
+            "/codeExample/": [
+                // "",
+                {
+                    title: '编程例题',
+                    collapsable: false,
+                    children: [
+                        { title: '题库1', path: '/codeExample/ku1/' },
+                    ]
+                }
             ],
         },
         sidebarDepth: 2
