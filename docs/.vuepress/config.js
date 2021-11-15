@@ -29,10 +29,16 @@ module.exports = {
                     // }
                 ]
             },
-            { 
-                text: '编程例题',items:[
-                {text:'题库1',link:'/codeExample/ku1/'}
-            ] },
+            {
+                text: '编程例题', items: [
+                    { text: '题库1', link: '/codeExample/ku1/' }
+                ]
+            },
+            {
+                text: '前端面试题', items: [
+                    { text: '题库1', link: '/interview/ku1/' }
+                ]
+            },
         ],
         sidebar: {
             "/frontEnd/react/": [
@@ -59,9 +65,11 @@ module.exports = {
                     title: 'java',
                     collapsable: false,
                     children: [
-                        { title: '案例', path: '' ,children:[
-                            { title: 'helloWord案例', path: '/bigData/JAVA/case/helloword/' },
-                        ]},
+                        {
+                            title: '案例', path: '', children: [
+                                { title: 'helloWord案例', path: '/bigData/JAVA/case/helloword/' },
+                            ]
+                        },
                     ]
                 }
             ],
