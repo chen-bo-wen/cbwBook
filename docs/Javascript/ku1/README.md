@@ -8,10 +8,10 @@
 
 <<< @/docs/Javascript/ku1/prevent/2throttle.js
 
- #### promise
- 例子：先打印“喝奶茶”，后打印“吃火锅”
+ #### promise & asyn + await
+ 例子：先打印“喝奶茶”，后打印“吃火锅”。<b>await + Promise，就可以将 Promise 里 resolve / reject 的值直接赋值给 “=” 左边</b>
 
-<!-- <<< @/docs/Javascript/ku1/prevent/3promise.vue -->
+<<< @/docs/Javascript/ku1/prevent/3promise.vue
 
 #### 构造函数和原型
 分为<b>静态成员</b>和<b>实例成员</b>。<b>静态成员</b>只能通过构造函数来访问，不可通过实例对象。<b>实例成员</b>则是函数内部通过this添加的成员，只能通过实例对象来访问。
