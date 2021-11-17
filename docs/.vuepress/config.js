@@ -35,8 +35,10 @@ module.exports = {
                 ]
             },
             {
-                text: '前端面试题', items: [
-                    { text: '题库1', link: '/interview/ku1/' }
+                text: '面试', items: [
+                    { text: '前端Javascript', items:[
+                       { text: '题库1', link: '/Javascript/ku1/' },
+                    ]}
                 ]
             },
         ],
