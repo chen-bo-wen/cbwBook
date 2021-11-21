@@ -98,6 +98,16 @@ module.exports = {
                     ]
                 }
             ],
+            "/Javascript/": [
+                // "",
+                {
+                    title: 'Javascript',
+                    collapsable: false,
+                    children: [
+                        { title: 'Javascript', path: '/Javascript/ku1/' },
+                    ]
+                }
+            ],
         },
         sidebarDepth: 2
     }
