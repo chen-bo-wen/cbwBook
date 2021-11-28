@@ -36,9 +36,11 @@ module.exports = {
             },
             {
                 text: '面试', items: [
-                    { text: '前端Javascript', items:[
-                       { text: '题库1', link: '/Javascript/ku1/' },
-                    ]}
+                    {
+                        text: '前端Javascript', items: [
+                            { text: '题库1', link: '/Javascript/ku1/' },
+                        ]
+                    }
                 ]
             },
         ],
@@ -49,7 +51,8 @@ module.exports = {
             ],
             "/frontEnd/vue/": [
                 "",
-                "vue1"
+                "vue1",
+                { title: 'vue3新特性', path: 'Vue3/' }
             ],
             // "/frontEnd/": [
             //     {
