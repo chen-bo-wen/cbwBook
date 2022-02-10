@@ -3,6 +3,95 @@ navbar:false
 sidebar:auto
 ---
 
+## ES6 相关面试题
+|    var   |  let  | const |  
+| :---: | :---: | :---: |
+| 声明提升 || 声明时就必须赋值，否则报错|
+|可重复声明||只不能修改，否则报错|
+|没有块级作用域|||
+
+```javascript
+function fn(){
+  for( var a = 0; a < 3; a++ ){
+    console.log(a) // 会按照顺序打印出 0，1，2
+  }
+   console.log(a) // 会打印出 3，因此可以得出这个没有块级作用域
+}
+fn()
+```
+
+### 值互换
+<b>let a = 1; let b = 2;如何将两个值进行互换，并且不引用第三方变量。</b><br>
+
+【方法1】：a=a^b; b=a^b; a=a^b;  // 异或运算的运用<br>
+【方法2】：[a,b]=[b,a] // 解构赋值的运用<br>
+[解构赋值，一一映射](https://blog.csdn.net/weixin_39572442/article/details/110799241)
+
+### 去重
+<b>let arr = [1,1,1,2,2,3,3]</b><br>
+
+```javascript
+let filterArr = [...new Set(arr)] // 得到的结果就是 [1,2,3]
+```
+
+### promise
+promise 打印顺序问题
+
+```javascript
+const promise = new Promise((resolve, reject) => {
+  console.log(1)
+  resolve();
+  console.log(2)
+})
+
+promise.then(() => {
+  console.log(3)
+})
+  
+console.log(4)
+```
+
+构造函数是同步执行，.then()是异步执行，因此正确答案是 1，2，4，3
+
+## v-model 原理
+【1】双向数据绑定
+
+[Object.defineProperty()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty)
+
+[兼容ie8低版本浏览器不支持addEventListener](https://www.jianshu.com/p/3f65e05a8c6f)
+
+```javascript
+    <input type="text" id="username">
+    <p id="userName"></p>
+
+    <script>
+        let obj = {}
+        Object.defineProperty(obj, 'userN', { // object.defineProperty 的参数值
+            // get() {
+            //     console.log('get取值')
+            // },
+            set(newVal) {
+                // 设置值
+                document.getElementById('userName').innerText = newVal
+                console.log('新22值', newVal) // 当 obj 的 userN 属性被赋予新的值时，就会触发 set 方法。
+            }
+        })
+
+        document.getElementById('username').addEventListener("keyup",function(){
+            obj.userN = event.target.value   // 监听输入框的输入事件，拿到对应的值
+        })
+    </script>
+```
+
+## data() 为什么是一个函数
+data()是一个闭包的设计，闭包可以让每一个组件都有自己私有作用域，确保各组件数据不会相互干扰。
+
+## v-if & v-show
+需要进行多次渲染的时候，例如一个按钮，需要多次的进行显示和隐藏，就使用 v-show，因为 v-show 只是隐藏 dom，但是还是会渲染 dom 的。<br>
+如果是 v-if ，则就是用于单次判断，当不符合条件的时候，直接就不会渲染 dom。<br>
+v-if => 单次判断显示隐藏 => 不会渲染 dom <br>
+v-show => 多次切换显示隐藏 => 会渲染但隐藏 dom （v-show 不能用于权限操作，因为可以直接在控制台修改 dom 的一些属性）
+
 ## 防抖 & 节流
  
  ### 防抖

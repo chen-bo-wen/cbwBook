@@ -218,3 +218,35 @@ provide 传递的值，在子组件和孙组件里都可以使用 inject 进行�
 <<< @/docs/frontEnd/vue/Vue3/RefDOM/Component/Son.vue
 
 ## $nextTick 的作用
+需求：页面上有一个文本框和一个按钮，点按钮之后，文本框出现，并且自动获取焦点。文本框失去焦点后，按钮出现。
+
+### 方法一:使用 onUpdated<br>
+
+```javaScript
+<template>
+    <div>
+        <button v-if='showButton' @click='showButton=!showButton'>按钮</button>
+        <input v-if='!showButton' type="text" ref='inputRef'>
+    </div>
+</template>
+
+<script>
+    import { ref, onUpdated } from 'vue'
+    export default {
+        setup() {
+            let showButton = ref(true)
+            let inputRef = ref('')
+            onUpdated(() => { // 使用 onUpdated
+                console.log('inputRef', inputRef)
+                inputRef.value.focus()
+            })
+            return { showButton, inputRef }
+        },
+    };
+</script>
+
+<style>
+</style>
+```
+
+### 方法二:$nextTick

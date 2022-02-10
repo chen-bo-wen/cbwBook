@@ -31,6 +31,7 @@ module.exports = {
             },
             {
                 text: '编程例题', items: [
+                    { text: '算法知识', link: '/codeExample/learn/' },
                     { text: '题库1', link: '/codeExample/ku1/' }
                 ]
             },
@@ -52,7 +53,8 @@ module.exports = {
             "/frontEnd/vue/": [
                 "",
                 "vue1",
-                { title: 'vue3新特性', path: 'Vue3/' }
+                { title: 'vue3新特性', path: 'Vue3/' },
+                { title: '小程序', path: 'Applet/' }
             ],
             // "/frontEnd/": [
             //     {
@@ -91,13 +93,23 @@ module.exports = {
             "/markdown/": [
                 ""
             ],
-            "/codeExample/": [
+            "/codeExample/ku1": [
                 // "",
                 {
                     title: '编程例题',
                     collapsable: false,
                     children: [
                         { title: '题库1', path: '/codeExample/ku1/' },
+                    ]
+                }
+            ],
+            "/codeExample/learn": [
+                // "",
+                {
+                    title: '算法知识',
+                    collapsable: false,
+                    children: [
+                        { title: '算法知识', path: '/codeExample/learn/' },
                     ]
                 }
             ],
