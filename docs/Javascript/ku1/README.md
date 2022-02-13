@@ -58,7 +58,7 @@ console.log(4)
 
 [Object.defineProperty()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty)
 
-[兼容ie8低版本浏览器不支持addEventListener](https://www.jianshu.com/p/3f65e05a8c6f)
+[.addEventListener()](https://www.jianshu.com/p/3f65e05a8c6f)【兼容ie8低版本浏览器不支持addEventListener】
 
 ```javascript
     <input type="text" id="username">
@@ -91,6 +91,113 @@ data()是一个闭包的设计，闭包可以让每一个组件都有自己私�
 如果是 v-if ，则就是用于单次判断，当不符合条件的时候，直接就不会渲染 dom。<br>
 v-if => 单次判断显示隐藏 => 不会渲染 dom <br>
 v-show => 多次切换显示隐藏 => 会渲染但隐藏 dom （v-show 不能用于权限操作，因为可以直接在控制台修改 dom 的一些属性）
+
+## 虚拟 DOM
+[虚拟 DOM](https://www.cnblogs.com/bbldhf/p/13871197.html)
+
+### 虚拟 DOM 如何提升渲染效率
+【1】局部更新（节点数据）<br>
+【2】将直接操作 DOM 的地方拿到两个 js 对象之中去比较
+
+### diff 中的 patch() 方法
+虚拟 DOM 生成的三要素：目标元素，属性，子节点
+
+[document.createElement：创建真实DOM](https://developer.mozilla.org/zh-CN/docs/Web/API/Document/createElement)
+
+```javascript
+    let n = document.createElement('div') 
+    console.log(n)    // <div></div>  
+```
+
+[hasOwnProperty(属性)：判断虚拟DOM里是否拥有该属性]()
+
+[setAttribute(属性名,属性值)：往真实DOM身上添加属性](https://www.w3school.com.cn/jsref/met_element_setattribute.asp)【html DOM 的 setAttribute() 方法】
+
+[appendChild()](https://www.runoob.com/jsref/met-node-appendchild.html)【html DOM 的 appendChild() 方法】
+
+```javascript
+        // 写的是一个大概的思路，具体实现没写
+        function createEle(vnode) {
+            let tag = vnode.tag // 虚拟 DOM 的标签
+            let attr = vnode.attr // 虚拟 DOM 的属性
+            let children = vnode.childNode // 虚拟 DOM 的子节点
+
+            if (!tag) {
+                return null // 如果没有目标元素的话，则是返回 null
+            }
+
+            // 创建真实 DOM
+            let ele = document.createElement(tag)
+            let attrName
+
+            // 为真实 DOM 添加属性
+            for (attrName in attr) { // for in 循环用来遍历数组或对象的属性
+                if (attr.hasOwnProperty(attrName)) { // hasOwnProperty 判断是否有该属性
+                    // 添加属性 setAttribute()
+                    ele.setAttribute(attrName, attr[attrName]) // 属性名，属性值
+                }
+            }
+
+            // 真实 DOM 的子节点
+            children.forEach(childNode => {
+                ele.appendChild(createE(childNode)) // 如果子节点里有子节点，则使用递归的方式
+            })
+            return ele // 返回创建好的真实 DOM
+        }
+
+        // 更新 虚拟 DOM 
+        function updatechild(vnode, newVnode) { // 更新子节点
+            let children = vnode.children || [] // 旧的虚拟 DOM 的子节点，也有三个要素：元素、属性、子节点
+            let newchildren = newVnode.children || [] // 新的虚拟 DOM 的子节点
+
+            children.forEach((childrenNode, index) => {
+                // 每一层都要判断是否发生了变化，如下面的结构
+                // <ul>
+                //     <li>
+                //        <li></li>
+                //        <li></li>
+                //     </li>
+                //     <li></li>
+                //     <li></li>
+                // </ul>
+                let newChildrenNode = newchildren[index]
+
+                if (childrenNode.tag === newChildrenNode.tag) { 
+                  // 如何才算作是同一个节点，diff算法核心原理里有
+                  // 深层次通过递归去比较
+                    updatechild(childrenNode, newChildrenNode) // 比较该节点的子节点
+                } else {
+                    replaceNode(childrenNode, newChildrenNode) // 否则进行替换
+                }
+            })
+        }
+```
+
+[diff算法核心原理](https://mp.apipost.cn/a/b59eca702d626581)
+
+## $nextTick()
+dom更新后延迟回调。如在A组件里调用B组件，需要等B组件加载完成之后才能调用B组件上的方法，如：
+
+```javascript
+$nextTick({
+  this.$refs.B.fn()
+})
+```
+
+## 单页面(SPA)与多页面的区别
+
+![单页面(SPA)与多页面的区别](/docs/Javascript/ku1/Image/SPA.png)
+
+[为何单页面的seo不友好](https://segmentfault.com/a/1190000020752752?utm_source=tag-newest)
+
+## v-for & v-if
+v-for 的优先级高于 v-if，这样的话会导致 v-if 运行在 v-for 的每个循环中间。
+
+## Vue-router & location
+?????????????
+location.href：（跳外链），简单方便，刷新页面。<br>
+Vue-router：（跳自身的页面）底层封装的是js的原生history，实现了按需加载，减少了DOM消耗。
+
 
 ## 防抖 & 节流
  
