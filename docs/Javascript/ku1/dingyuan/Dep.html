@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div>
+        订阅视图-1：<span class="box-1"></span>
+        订阅视图-2：<span class="box-2"></span>
+    </div>
+    <script src="index.js"></script>
+    <script>
+        let obj={}
+        dataHI({
+            data:obj,
+            tag:'view-1',
+            datakey:'one',
+            selector:'.box-1'
+        })
+
+        dataHI({
+            data:obj,
+            tag:'view-2',
+            datakey:'two',
+            selector:'.box-2'
+        })
+
+        // 初始化赋值
+        obj.one='这是视图1'
+        obj.two='这是视图2'
+
+        // 劫持数据，更新者负责重新渲染
+    </script>
+</body>
+</html>

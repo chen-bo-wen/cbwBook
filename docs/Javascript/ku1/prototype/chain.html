@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div>
+        <div id="div1">79777</div>
+    </div>
+
+    <script>
+        function Elem(id) {
+            this.elem = document.getElementById(id) // 获取元素
+        }
+
+        Elem.prototype.html = function (html) {
+            let ele = this.elem // 这里的 this 指向的是实例对象，实例对象有构造函数的 elem 属性
+            if (html) {
+                ele.innerHTML = html
+                // 注意！！！这里必须要写 return this 实现链式编程
+                return this
+            }
+        }
+
+        Elem.prototype.on = function (type, fn) {
+            this.elem.addEventListener(type, fn)
+        }
+
+        let dom = new Elem('div1')
+        dom.html('这是自己设置的').on('click', (e) => {
+            console.log('e', e)
+        })
+    </script>
+</body>

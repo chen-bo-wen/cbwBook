@@ -3,6 +3,23 @@ navbar:false
 sidebar:auto
 ---
 
+## html 默认代码
+
+```javascript
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+</body>
+</html>
+```
+
 ## ES6 相关面试题
 |    var   |  let  | const |  
 | :---: | :---: | :---: |
@@ -63,6 +80,7 @@ console.log(4)
 ```javascript
     <input type="text" id="username">
     <p id="userName"></p>
+    <p id="userName2"></p>
 
     <script>
         let obj = {}
@@ -70,14 +88,17 @@ console.log(4)
             // get() {
             //     console.log('get取值')
             // },
-            set(newVal) {
+            set(newVal) { // 一次性拿到值，这样可以对多个元素进行响应（自己写的）
                 // 设置值
                 document.getElementById('userName').innerText = newVal
+                document.getElementById('userName2').innerText = newVal
                 console.log('新22值', newVal) // 当 obj 的 userN 属性被赋予新的值时，就会触发 set 方法。
             }
         })
 
+        // let pname = document.getElementById('userName2') // 这就是一个一个的去设置响应
         document.getElementById('username').addEventListener("keyup",function(){
+            // pname.innerText = event.target.value  
             obj.userN = event.target.value   // 监听输入框的输入事件，拿到对应的值
         })
     </script>
@@ -198,8 +219,60 @@ v-for 的优先级高于 v-if，这样的话会导致 v-if 运行在 v-for 的�
 location.href：（跳外链），简单方便，刷新页面。<br>
 Vue-router：（跳自身的页面）底层封装的是js的原生history，实现了按需加载，减少了DOM消耗。
 
+## vue2.0 的响应式原理
+响应式：1.数据联动（双向绑定） 2.可以捕获到数据的修改 <br>
+？？？？ 没看懂
+通过发布订阅模式，加上数据截持，也就是 Object.defineProperty
+
+<<< @/docs/Javascript/ku1/dingyuan/Dep.js
+
+<<< @/docs/Javascript/ku1/dingyuan/Dep.html
+
+[数据响应式视频](https://www.bilibili.com/video/BV16Y411875j?p=5&spm_id_from=pageDriver)
+
+[深入响应式原理](https://cn.vuejs.org/v2/guide/reactivity.html)
+
+[Array.prototype.shift.call(arguments)](https://blog.csdn.net/weixin_44524243/article/details/119646895)
+
+[document.querySelector()](https://www.runoob.com/jsref/met-document-queryselector.html)
+
+### for 循环的一种简写法
+如果我们用for循环要输出1到10，我们可以这么写:
+
+```javascript
+for(var i=0;i<10;i++){
+  console.log(i);
+}
+```
+
+但是！根据上面的语法说明，我们也可以写成这样
+
+```javascript
+for(var i=10;i--;){
+  console.log(i);
+}
+```
+  
+刚开始看的时候我也很疑惑，怎么能这么写？语句2放的是循环条件，i–是什么判断条件。其实不然，在语句2中，如果返回true循环会继续执行。在js中0,null,undefined,false,'',””作为条件判断时，其结果为false，也就说当i–到0的时候就是false，循环就终止了。
+
+再回到文章开头的代码
+
+```javascript
+for (var i = 0, rule; rule = rules[i++];) {
+  //do something
+}
+```
+
+这个rule = rules[i++]就是判断条件，当成为undefined时就会终止循环啦。所以这段代码换成普通写法就是这样的：
+
+```javascript
+for(var i = 0;i < rules.length;i++){
+  var rule = rules[i]
+}
+```
 
 ## 防抖 & 节流
+闭包就是能够读取其他函数内部变量的函数。
  
  ### 防抖
 
@@ -215,20 +288,36 @@ Vue-router：（跳自身的页面）底层封装的是js的原生history，实�
 <<< @/docs/Javascript/ku1/prevent/3promise.vue
 
 ## 构造函数和原型
+<b>原型（prototype）是函数所特有的。但是任何对象、数组、number都有原型链（__proto__ 或 [[prototype]]）</b>
 分为<b>静态成员</b>和<b>实例成员</b>。<b>静态成员</b>只能通过构造函数来访问，不可通过实例对象。<b>实例成员</b>则是函数内部通过this添加的成员，只能通过实例对象来访问。
 
 <<< @/docs/Javascript/ku1/prevent/4prototype.js
 
-### 构造函数 prototype
+### 构造函数（原型） prototype
 <b>prototype的作用</b>：原型的作用，就是共享方法。因为构造函数的每个实例对象都会开辟新的内存，因此会造成内存的浪费。
 
 ```JavaScript
-console.dir(Star)
+console.dir(Star) // console.dir()可以显示一个对象所有的属性和方法。
 Star.prototype.sing=function(){}
 ```
 
-### 对象原型 __proto__
-首先看实例对象是否拥有该方法，如若没有，则因有 __proto__ 的存在，就去构造函数原型对象 prototype 身上去找。
+### 对象原型(原型链) __proto__ 或 [[prototype]]
+[[prototype]]为改版后的谷歌的写法。
+首先看实例对象是否拥有该方法，如若没有，则因有  __proto__  的存在，就去构造函数原型对象 prototype 身上去找。
+
+### 判断属性是原型上的还是原型链上的
+```javascript
+for(let item in person1){ // for in 循环属性
+  if(person1.hasOwnProperty(item)){ // 这样就可以找到其私有属性
+    console.log(item)
+  }
+}
+```
+
+### 示例
+[链式编程](https://juejin.cn/post/6844903999536267277)
+
+<<< @/docs/Javascript/ku1/prototype/chain.html
 
 ### constructor
 对象原型（__proto__)和构造函数（prototype）原型对象里都有一个属性，即 constructor 属性。<b>constructor主要用于记录该对象引用于哪个构造函数，它可以让原型对象重新指向原来的构造函数。</b>如下：如若没有<b>constructor: Star</b>，则在打印Star.prototype.constructor的时候，指向的就是 object。
@@ -281,10 +370,10 @@ let arr = [1,2,3] // 即 new Array(1,2,3)
 console.log(arr.sum())
 }
 ```
-## 继承
+### 继承
 ES6之前并没有提供extends继承，我们可以通过构造函数+原型对象模拟实现继承，被称为组合继承。
 
-### 子构造函数继承父构造函数的属性或方法
+#### 子构造函数继承父构造函数的属性或方法
 
 ```javaScript
 function Father(uname,uage){
@@ -292,13 +381,14 @@ function Father(uname,uage){
     this.age = uage
 }
 
-function Son(){
-    Father.call(this) // 使用 call 方法使得其指向 Son 的实例对象
+function Son(name,age){
+  // call 分别接收参数，apply 接收的参数是数组
+    Father.call(this,name,age) // 使用 call 方法使得其指向 Son 的实例对象
 }
 var son = new Son('ldh',55)
 ```
 
-### 借用原型对象继承方法
+#### 借用原型对象继承方法
 如果使用 Son.prototype = Father.prototype，则会使得 Son原型对象 和 Father原型对象指向的是同一个地址。<b>如果想要 Son 的原型对象里继承 Father 的方法，同时又有自己的才有的方法。这时就可以利用原型对象继承方法。</b>
 
 
@@ -308,8 +398,8 @@ function Father(uname,uage){
     this.age = uage
 }
 
-function Son(){
-    Father.call(this) // 使用 call 方法使得其指向 Son 的实例对象
+function Son(name,age){
+    Father.call(this,name,age) // 使用 call 方法使得其指向 Son 的实例对象
 }
 
 Son.prototype = new Father()
@@ -321,7 +411,7 @@ var son = new Son('ldh',55)
 
 ![利用原型对象继承方法](/docs/Javascript/ku1/Image/extends.png)
 
-### 类
+#### 类
 类的本质其实还是函数，ES6中的类其实就是语法糖
 
 ```javaScript
@@ -397,7 +487,7 @@ fn(1,2) // 输出 3
 | :-------------------------------------------: | :---------------------------------------------: | :---------------------------------------------: |
 |                   调用函数                    |                    调用函数                     |              <b>不会调用函数 </b>               |
 |                 改变this指向                  |                  改变this指向                   |                  改变this指向                   |
-|                                               |        <b>参数必须是以数组的形式传入</b>        | <b>返回的是原函数该改变this之后产生的新函数</b> |
+|           分别接收参数 person.fullName.call(person1, "Oslo", "Norway")                                   |        <b>参数必须是以数组的形式传入</b> person.fullName.apply(person1, ["Oslo", "Norway"])       | <b>返回的是原函数该改变this之后产生的新函数</b> |
 | <b>主要用于子构造函数继承父构造函数的属性</b> | <b>经常和数组有关系，因为它的传参必须是数组</b> |              <b>不立即调用函数</b>              |
 
 ### call
@@ -472,8 +562,10 @@ $('div').animate({
 
 ## 闭包
 
-<b>描述：</b>指有权访问另一个函数作用域中变量的函数。如防抖、节流，都是应用了闭包的原理。<br>
-<b>主要作用：</b>延伸了变量的作用范围。<br>
+[js垃圾回收机制原理](https://cloud.tencent.com/developer/article/1852932)
+
+<b>描述：</b>指有权访问另一个函数作用域中变量的函数。例如在javascript中，只有函数内部的子函数才能读取局部变量，所以闭包可以理解成“定义在一个函数内部的函数”。如防抖、节流，都是应用了闭包的原理。<br>
+<b>主要作用：</b>【1】延长变量的生命周期。【2】创建私有环境。<br>例如在 data() 里，设计就是闭包，这样可以使得各个组件有各自的私有作用域，防止变量相互影响。
 
 ### 实例一
 点击li，输出当前 li 的索引值。不使用 v-for 循环。
@@ -482,7 +574,6 @@ $('div').animate({
 
 ### 实例二
 计算打车价格
-
 
 ## 递归
 函数在内部调用其本身。但是如果可以使用循环解决的问题，就不尽量不用递归。
@@ -641,6 +732,26 @@ Object.assign(o, obj) // 把 obj 拷贝给 o
     o.hobby.sing = false;
     console.log("o", o);
     console.log("obj", obj);
+```
+
+### 解构赋值
+针对一维的数组和对象是深拷贝（改变一个不会影响另一个），针对多维的数组和对象是浅拷贝。
+
+```javascript
+let arr = [1,2,3,4]
+arr2 = arr
+arr2.push(5)
+console.log(arr, arr2) // 都是 [1,2,3,4,5]
+
+let array = [1,2,3,4]
+array2 = [...array]
+array2.push(5)
+console.log(array, array2) //  [1,2,3,4]  [1,2,3,4,5]
+
+let Arr = [[1],[1,2]] // 多维数组，解构赋值是 浅拷贝（一个数组的变动会影响另一个）
+Arr2 = [...Arr]
+Arr2[0].push(2)
+console.log(Arr, Arr2) //  都是 [[1,2],[1,2]]
 ```
 
 ## 正则表达式
@@ -839,7 +950,42 @@ str.replace(/激情/g,'**')
 | :--------: | :------------: | :------------: |
 | 函数作用域 |   块级作用域   |   块级作用域   |
 |  变量提升  | 不存在变量提升 | 不存在变量提升 |
+|  没有块级作用域  |         |               |
 |   值可改   |     值可改     |    值不可改    |
+
+```javascript
+  console.log(name) // undefined
+  var name = '小明'
+
+  function fn2(){
+    for(var i = 0; i < 3; i++){
+
+    }
+    console.log(i) // 因为 var 定义的没有局部作用域，因此打印出结果为 3
+  }
+  fn2()
+
+  var a = 1
+  var a = 2
+  console.log(a) // a，不会报错，这是使用 var 的一个致命缺陷
+```
+
+## padding & margin
+两者的作用对象不同。padding 是针对于自身的，margin是作用域外部对象的。
+
+## vw & 百分比
+vw 是参照屏幕的宽度，% 是参照父盒子的宽度。
+
+## 如何让谷歌浏览器支持小字体
+默认情况下，谷歌支持的最小字体是 12px，如果需要让谷歌支持比 12px 还要小的字体，则需要：
+
+```javascript
+    .divBox {
+        font-size: 12px;
+        transform: scale(0.6);
+        -webkit-transform: scale(0.6);
+    }
+```
 
 ## 剩余参数
 
