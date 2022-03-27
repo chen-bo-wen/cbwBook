@@ -288,7 +288,7 @@ for(var i = 0;i < rules.length;i++){
 <<< @/docs/Javascript/ku1/prevent/3promise.vue
 
 ## 构造函数和原型
-<b>原型（prototype）是函数所特有的。但是任何对象、数组、number都有原型链（__proto__ 或 [[prototype]]）</b>
+<b>原型（prototype）是函数所特有的。但是任何对象、数组、number 都有原型链（__proto__ 或 [[prototype]]）</b>
 分为<b>静态成员</b>和<b>实例成员</b>。<b>静态成员</b>只能通过构造函数来访问，不可通过实例对象。<b>实例成员</b>则是函数内部通过this添加的成员，只能通过实例对象来访问。
 
 <<< @/docs/Javascript/ku1/prevent/4prototype.js

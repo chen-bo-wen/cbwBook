@@ -39,7 +39,8 @@ module.exports = {
                 text: '面试', items: [
                     {
                         text: '前端Javascript', items: [
-                            { text: '题库1', link: '/Javascript/ku1/' },
+                            { text: '面试流程', link: '/Javascript/process/' },
+                            { text: '题库', link: '/Javascript/ku1/' }
                         ]
                     }
                 ]
