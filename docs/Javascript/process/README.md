@@ -149,3 +149,24 @@ Node v10 以后：<br>
 
         // 如果将 resolve(2) 去掉，则执行结果是：3 end 4 1
 ```
+
+## 事件的捕获和冒泡机制
+事件捕获(自顶向下)：从最顶层的 window 对象开始逐渐往下传播事件，即最顶层的 window 对象最早接收事件，最低层的具体被操作的元素最后接收事件。<br>
+
+事件冒泡(自底向上)：与事件捕获相反，是自底向上冒的。<br>
+
+### window.addEventListener 
+window.addEventListener 监听的是什么阶段的事件:<br>
+
+window.addEventListener 里面有三个参数,第三个参数可传可不传,当不传的时候,默认是 false,这样就是冒泡阶段,如果传的是 true,则是捕获阶段    
+
+window.addEventListener('click',()=>{
+
+},true/false) // 默认是 false (冒泡阶段),设置为 true (捕获阶段)
+
+### 平常有哪些场景用到了这个机制
+事件委托通俗地来讲，就是把一个元素响应事件（click、keydown......）的函数委托到另一个元素；<br>
+
+一般来讲，会把一个或者一组元素的事件委托到它的父层或者更外层元素上，真正绑定事件的是外层元素，当事件响应到需要绑定的元素上时，会通过事件冒泡机制从而触发它的外层元素的绑定事件上，然后在外层元素上去执行函数。  
+
+[array.prototype 属性](https://cloud.tencent.com/developer/section/1191536)

@@ -7,26 +7,25 @@ module.exports = {
         nav: [
             { text: '首页', link: '/' },
             {
-                text: '前后端', items: [
+                text: '前端', items: [
                     {
-                        text: '前端', link: '/frontEnd/', items: [
+                        text: '框架', link: '/frontEnd/', items: [
                             { text: 'vue', link: '/frontEnd/vue/' },
                             { text: 'react', link: '/frontEnd/react/' },
                         ]
                     },
-                    { text: '后端', link: '' },
+                    {
+                        text: '语言', link: '/frontEnd/language', items: [
+                            { text: 'typescript', link: '/frontEnd/language/typescript/' },
+                        ]
+                    }
                 ]
             },
-            { text: '大数据', link: '/bigData/' },
             {
                 text: '第三方工具', items: [
                     { text: 'GitHub', link: '/git/' },
-                    { text: 'markdown', link: '/markdown/' }
-                    // {
-                    //     text: 'markdown', items: [
-                    //         { text: 'markdown', link: '/markdown/' }
-                    //     ]
-                    // }
+                    { text: 'markdown', link: '/markdown/' },
+                    { text: '搭建博客', link: '/boke/' },
                 ]
             },
             {
@@ -36,11 +35,11 @@ module.exports = {
                 ]
             },
             {
-                text: '面试', items: [
+                text: 'interview', items: [
                     {
                         text: '前端Javascript', items: [
-                            { text: '面试流程', link: '/Javascript/process/' },
-                            { text: '题库', link: '/Javascript/ku1/' }
+                            { text: '题库1', link: '/Javascript/process/' },
+                            { text: '题库2', link: '/Javascript/ku1/' }
                         ]
                     }
                 ]
@@ -53,9 +52,7 @@ module.exports = {
             ],
             "/frontEnd/vue/": [
                 "",
-                "vue1",
-                { title: 'vue3新特性', path: 'Vue3/' },
-                { title: '小程序', path: 'Applet/' }
+                { title: 'vue3', path: 'Vue3/' },
             ],
             // "/frontEnd/": [
             //     {

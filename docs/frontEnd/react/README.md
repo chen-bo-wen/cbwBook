@@ -1,5 +1,10 @@
 ### 命令
 谷歌插件：react developer tools<br>
+输入命令：npm install（全称）
+看 package.json 文件，找到 script，上面有 dev，跑项目的时候就用 npm run dev。有 start，就用 npm start
+
+![react 启动命令](/docs/frontEnd/react/Image/githubReact.png)
+
 
 ### 脚手架
 安装依赖：npm install -g create-react-app<br>
