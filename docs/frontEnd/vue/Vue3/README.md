@@ -623,4 +623,46 @@ provide 传递的值，在子组件和孙组件里都可以使用 inject 进行�
 ## Teleport
 vue3 里自带的一个默认组件 Teleport。
 
-![有环链表相交的三种情况](/docs/codeExample/ku1/Image/loop.png)
+比如在某个组件渲染的时候，在某种条件下需要显示一个全局的对话框 modal组件（就是一个弹窗/浮层让用户完成一些确定或取消的工作）。这个 modal组件 是自定义的一个组件。
+
+![之前的挂载情况](/docs/frontEnd/vue/Vue3/Image/old.png)
+
+```JavaScript
+// 之前代码的常用写法
+<template>
+    <div class="foo">
+        <div class="foo">
+            <div>...</div>
+            // 将引入的 modal组件 放置在这里
+            <modal v-if="modalopen"></modal>
+        </div>
+    </div>
+</template>
+```
+
+
+![使用 Teleport 后的挂载情况](/docs/frontEnd/vue/Vue3/Image/new.png)
+
+在自定义组件的最外层添加一个标签 teleport
+
+```JavaScript
+// vue3 新添加了一个默认的组件就叫 Teleport，我们可以拿过来直接使用，它上面有一个 to 的属性，它接受一个css query selector 作为参数，这就是代表要把这个组件渲染到哪个 dom 元素中
+  <teleport to="#modal"> // 想将其渲染到 id 为 modal 的组件上去
+    <div id="center">
+      <h1>this is a modal</h1>
+    </div>
+  </teleport>
+```
+
+在引入 自定义 modal 组件的文件里，定义：
+
+```JavaScript
+<div id="modal"></div>
+```
+
+## emits
+？？？？？ 为什么出不来？？？？？
+
+## suspense 用于异步请求
+没学。。。。
+

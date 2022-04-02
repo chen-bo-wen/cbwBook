@@ -53,6 +53,8 @@ module.exports = {
             "/frontEnd/vue/": [
                 "",
                 { title: 'vue3', path: 'Vue3/' },
+                { title: '项目', path: 'project/' },
+                { title: '问题', path: 'problem/' },
             ],
             // "/frontEnd/": [
             //     {
