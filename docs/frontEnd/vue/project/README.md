@@ -403,26 +403,51 @@ export default defineComponent({
   }
 ```
 
-## GlobalHeader 组件 & DropDown 组件
+## 登录注册
+GlobalHeader 组件 & DropDown 组件
 
 ![UI](../project/Image/GlobalHeader.png)
 
-### GlobalHeader 组件
+### 头部组件（固定存在于所有界面） 
+
+GlobalHeader 组件，之所以可以固定存在于所有界面的顶端，是因为会在 App.vue 里引用该组件，可以看第二步：引用 vue-router 后，会将所有的 url 跳转显示在 router-view，而 global-header 标签 在 router-view 前面。
 
 [Bootstrap nav 样式文档地址](https://v5.getbootstrap.com/docs/5.0/components/navs/)
 
-定义一个 header 子组件
+第一步：定义一个 header 子组件
+
+1）分为 未登录 和 已登录 两种显示状况<br>
+2）interface 一个 UserProps ，并且将其 export 出去<br>
+3）用户的信息是从引用其的父组件里传来的，因此需要设置一个 props，接收传来的用户信息<br>
+4）从父组件传来的用户信息是一个 object 类型的
+```JavaScript
+// import { defineComponent, PropType } from 'vue'
+ type: Object as PropType<UserProps>  
+```
+5）父组件引用该组件后，user 属性是必传的 required: true
 
 ```JavaScript
 <template>
   <nav class="navbar navbar-dark bg-primary justify-content-between mb-4 px-4">
     <a class="navbar-brand" href="#">者也专栏</a>
+
+    // 未登录时
     <ul v-if="!user.isLogin" class="list-inline mb-0">
       <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">登陆</a></li>
       <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">注册</a></li>
     </ul>
+
+    // 登录成功后
     <ul v-else class="list-inline mb-0">
-      <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">你好 {{user.name}}</a></li>
+      <li class="list-inline-item">
+          // 使用了自定义的 dropDown 组件 和 自定义的 dropDownItem 组件，在后面内容
+          <drop-down :title="`你好 ${user.name}`">
+              // router-link to="/create"   
+              <drop-down-item><router-link to="/create" class="dropdown-item">新建文章</router-link></drop-down-item>
+              <drop-down-item><router-link :to="`/column/${user.column}`" class="dropdown-item">我的专栏</router-link></drop-down-item>
+              <drop-down-item><a href="#" class="dropdown-item">退出登录</a></drop-down-item>
+          </drop-down>
+      </li>
     </ul>
   </nav>
 </template>
@@ -437,6 +462,8 @@ export interface UserProps {
 export default defineComponent({
   name: 'GlobalHeader',
   props: {
+    // 接收从父组件传来的用户信息，用户信息是一个 object，类型是 UserProps
+    // 父组件引用该组件后，user 属性是必传的 required: true
     user: {
       type: Object as PropType<UserProps>, // Object 存储的数据类型值都是 UserProps 类型
       required: true
@@ -446,10 +473,12 @@ export default defineComponent({
 </script>
 ```
 
-App.vue 父组件里使用，并且在父组件里传送具体数据
+第二步：App.vue 父组件里使用，并且在父组件里传送具体数据。真实的用户信息之后可以存储在 vuex 里面，这里先暂时使用自定义的 test 数据。
 
 ```JavaScript
 <global-header :user="currentUser"></global-header>
+// 之后有引用 vue-router 后，会将所有的 url 跳转显示在 router-view
+<router-view></router-view>
 
 import GlobalHeader, { UserProps } from '@/components/GlobalHeader.vue'
 
@@ -471,64 +500,10 @@ export default defineComponent({
 })
 ```
 
-加上之前的代码，完整页面是
+### 自定义下拉框组件
+该组件的功能有：当点击组件外部区域的时候，可以自动隐藏该组件。
 
-```JavaScript
-<template>
-  <div class="contaniner">
-    <global-header :user="currentUser"></global-header>
-    <column-list :list = "list"></column-list>
-  </div>
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
-// 将设置的 ColumnProps 也拿过来
-import ColumnList, { ColumnProps } from '@/components/ColumnList.vue'
-import GlobalHeader, { UserProps } from '@/components/GlobalHeader.vue'
-
-// 自定义 ColumnList 的 test 数据
-const testData: ColumnProps[] = [
-  {
-    id: 1,
-    title: 'test1的专栏',
-    description: '这是的test1专栏，有一段非常有意思的简介，可以更新一下欧',
-    avatar: 'http://vue-maker.oss-cn-hangzhou.aliyuncs.com/vue-marker/5ee22dd58b3c4520912b9470.jpg?x-oss-process=image/resize,m_pad,h_100,w_100'
-  },
-  {
-    id: 2,
-    title: 'test2的专栏',
-    description: '这是的test2专栏，有一段非常有意思的简介，可以更新一下欧'
-    // avatar: 'http://vue-maker.oss-cn-hangzhou.aliyuncs.com/vue-marker/5ee22dd58b3c4520912b9470.jpg?x-oss-process=image/resize,m_pad,h_100,w_100'
-  }
-]
-
-// 自定义 GlobalHeader 的 test 数据
-const currentUser: UserProps = {
-  isLogin: false
-}
-
-export default defineComponent({
-  name: 'App',
-  components: {
-    ColumnList,
-    GlobalHeader
-  },
-  setup () {
-    return {
-      list: testData,
-      currentUser
-    }
-  }
-})
-</script>
-
-<style>
-</style>
-```
-
-### DropDown 组件
+DropDown 组件
 
 ![UI](../project/Image/dropdown.png)
 
@@ -578,60 +553,8 @@ export default defineComponent({
 </script>
 ```
 
-在 GlobalHeader 父组件里引入
-
-```JavaScript
-// 完整代码
-<template>
-  <nav class="navbar navbar-dark bg-primary justify-content-between mb-4 px-4">
-    <a class="navbar-brand" href="#">者也专栏</a>
-    // 用户未登录，显示以下代码
-    <ul v-if="!user.isLogin" class="list-inline mb-0">
-      <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">登陆</a></li>
-      <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">注册</a></li>
-    </ul>
-
-    // 用户登录上了，显示以下代码
-    <ul v-else class="list-inline mb-0">
-      // <li class="list-inline-item">
-      //   <a href="#" class="btn btn-outline-light my-2">
-      //     你好 {{user.name}}
-      //   </a>
-      // </li>
-      <li class="list-inline-item">
-          <drop-down :title="`你好 ${user.name}`"></drop-down>
-      </li>
-    </ul>
-  </nav>
-</template>
-
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import DropDown from '@/components/DropDown.vue'
-
-export interface UserProps {
-  isLogin: boolean;
-  name?: string;
-  id?: number;
-}
-
-export default defineComponent({
-  name: 'GlobalHeader',
-  components: {
-    DropDown
-  },
-  props: {
-    user: {
-      type: Object as PropType<UserProps>, // Object 存储的数据类型值都是 UserProps 类型
-      required: true
-    }
-  }
-})
-</script>
-
-```
-
-## 为 Dropdown 添加 DropdownItem
+### 一个父组件中，子组件A 里放置 子组件B
+这里是为 Dropdown 添加 DropdownItem
 
 DropdownItem 子组件
 
@@ -684,70 +607,18 @@ GlobalHeader 父组件 也引入了 Dropdown 子组件
 
 import DropDownItem from '@/components/DropDownItem.vue'
 
-// 完整代码如下：
-<template>
-  <nav class="navbar navbar-dark bg-primary justify-content-between mb-4 px-4">
-    <a class="navbar-brand" href="#">者也专栏</a>
-    <ul v-if="!user.isLogin" class="list-inline mb-0">
-      <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">登陆</a></li>
-      <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">注册</a></li>
-    </ul>
-    <ul v-else class="list-inline mb-0">
-      // <li class="list-inline-item"><a href="#" class="btn btn-outline-light my-2">你好 {{user.name}}</a></li> 
-      <li class="list-inline-item">
-          <drop-down :title="`你好 ${user.name}`">
-              <drop-down-item><a href="#" class="dropdown-item">新建文章</a></drop-down-item>
-              <drop-down-item><a href="#" class="dropdown-item">编辑资料</a></drop-down-item>
-              <drop-down-item><a href="#" class="dropdown-item">退出登录</a></drop-down-item>
-          </drop-down>
-      </li>
-    </ul>
-  </nav>
-</template>
-
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import DropDown from '@/components/DropDown.vue'
-import DropDownItem from '@/components/DropDownItem.vue'
-
-export interface UserProps {
-  isLogin: boolean;
-  name?: string;
-  id?: number;
-}
-
-export default defineComponent({
-  name: 'GlobalHeader',
-  components: {
-    DropDown,
-    DropDownItem
-  },
-  props: {
-    user: {
-      type: Object as PropType<UserProps>, // Object 存储的数据类型值都是 UserProps 类型
-      required: true
-    }
-  }
-})
-</script>
-
 ```
 
-DropDown
+DropDown子组件 和 DropdownItem子组件 在同一个父组件里被引用。在父组件里，DropDown子组件 里面要放置 DropdownItem子组件，因此在 DropDown子组件 的内部要添加 slot标签。
 
 ```JavaScript
-// 变动部分
-    <slot></slot>
-
-
-// 完整代码如下：
+// DropDown子组件 完整代码如下：
 <template>
 <div class="dropdown">
   <a href="#" class="btn btn-outline-light my-2 dropdown-toggle" @click.prevent="toggleOpen">
     {{title}}
   </a>
 
-  // :style="{display: 'block'}"
   <ul class="dropdown-menu" :style="{display: 'block'}" v-if="isOpen">
     // <li class="dropdown-item">
     //   <a href="#">新建文章</a>
@@ -755,6 +626,8 @@ DropDown
     // <li class="dropdown-item">
     //   <a href="#">编辑资料</a>
     // </li> 
+
+    // 添加 slot 标签
     <slot></slot>
   </ul>
 </div>
@@ -785,10 +658,13 @@ export default defineComponent({
 
 ```
 
-## Dropdown 点击外部区域自动隐藏
-返回和 ref 同名的响应式对象，就可以拿到对应的 dom 节点
+### 点击元素外部隐藏
+Dropdown 点击外部区域自动隐藏
 
-判断当前点击位置是否在某一个节点里 .contains()
+1）返回和 ref 同名的响应式对象，可以拿到对应的 dom 节点<br>
+2）判断当前点击位置是否在某一个节点里 .contains()<br>
+3）在 onMounted 的时候，document.addEventListener 监听全局, 判断是否点击了指定区域<br>
+4）在 onUnmounted 的时候，document.removeEventListener 清除监听
 
 Dropdown 组件里添加
 
@@ -822,16 +698,21 @@ Dropdown 组件里添加
     })
     return {
       isOpen,
-      toggleOpen,
       // 返回和 ref 同名的响应式对象，就可以拿到对应的 dom 节点
       dropdownRef
     }
 ```
 
-### 判断是否点击到了一个 dom 元素的外面 useClickOutside.ts 
-将之前的点击下拉框之外地方，就关闭的这个性能，改造为一个自定义函数
+### 点击元素外部隐藏（抽离成公共函数）
+判断是否点击到了一个 dom 元素的外面 （useClickOutside.ts）
 
 第一个自定义元素，判断是否点击到了一个 dom 元素的外面
+
+1) 函数里传入参数 dom 元素 elementRef: Ref<null | HTMLElement> <br>
+2) 设置一个是否点击了元素外部的初始值，const isClickOutside = ref(false)<br>
+3) 判断当前点击位置是否在某一个节点里 .contains()<br>
+4) 在 onMounted 的时候，document.addEventListener 监听全局, 判断是否点击了指定区域<br>
+5) 在 onUnmounted 的时候，document.removeEventListener 清除监听
 
 ```JavaScript
 // 函数功能： 判断是否点击到了一个 dom 元素的外面
@@ -961,7 +842,11 @@ export default defineComponent({
 ![表单 组件 UI](../project/Image/formFram.png)
 
 ### 表单验证
-输入为空的时候，提示 “输入不能为空”
+输入为空的时候，提示 "can not be empty"，输入的邮箱地址错误的时候，提示"should be valid email"
+
+1) 创建一个 emailRef对象，里面有三个属性 val，error，message <br>
+2) 在输入的 input文本框上添加 v-model = emailRef.val，用于获取输入的值。同时添加 @blur="validateEmail" 事件，让其失焦的时候就进行验证。<br>
+3) 创建一个 验证表单函数 validateEmail
 
 ```JavaScript
 <template>
@@ -987,9 +872,8 @@ import { defineComponent, reactive } from 'vue'
 export default defineComponent({
   name: 'foRm',
   setup () {
-    // 输入框里绑定了 v-model，v-model="emailRef.val"
-    // reactive，和 ref 类似，只不过是一个对象，里面可以又多个值
-    const emailRef = reactive({
+    // 1.输入框里绑定了 v-model，v-model="emailRef.val"
+    const emailRef = reactive({// reactive，和 ref 类似，只不过是一个对象，里面可以又多个值
       val: '', // 文本框里输入的值
       error: false, // 验证结果是否错误
       message: '' // 验证错误时的提示信息
@@ -1021,80 +905,43 @@ export default defineComponent({
 
 ```
 
-### 抽离验证规则
-将抽离的规则放到一个组件里 ValidateInput.vue
+### 抽离文本框，接收不同验证规则
+抽离一个公共组件 ValidateInput.vue，里面接收从父组件传来的验证规则。这样就可以实现不同的父组件，验证规则不同。
 
-<b> 设置一个 存放类型为 RuleProp 数据的数组 </b>
-
-```JavaScript
-// 子组件 ValidateInput.vue
- interface RuleProp {
-        type: 'required' | 'email';
-        message: string;
- }
-//  设置一个 type ，是一个 存放类型为 RuleProp 数据的数组，然后将其导出
-export type RulesProp = RuleProp[]
-
-
-// 父组件 Form.vue
-// 设置验证规则
-import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
-
-const emailRules: RulesProp = [ // 每一条数据都是 RulesProp 类型
-  { type: 'required', message: '电子邮箱地址不能为空' },
-  { type: 'email', message: '请输入正确的电子邮箱格式' }
-]
-```
-
-完整的子组件 ValidateInput.vue 代码
+子组件设置一个 存放类型为 RuleProp 数据的数组
 
 ```JavaScript
-<template>
-        <input type="email" class="form-control" id="exampleInputEmail1"
-                v-model="inputRef.val"
-               @blur="validateInput"
-        >
-        <div id="emailHelp" class="form-text" v-if="inputRef.error">{{inputRef.message}}</div>
-</template>
-
-<script lang="ts">
-import { defineComponent, reactive, PropType } from 'vue'
+// 1. @blur="validateInput"
+<input type="email" class="form-control" id="exampleInputEmail1"
+        v-model="inputRef.val"
+       @blur="validateInput"
+>
+<span v-if="inputRef.error" class="invalid-feedback">{{inputRef.message}}</span>
 
  interface RuleProp {
-    // 这个用于区分每一种情况自定义的
     type: 'required' | 'email';
     message: string;
  }
-//  设置一个 type ，是一个 存放类型为 RuleProp 数据的数组，然后将其导出
-export type RulesProp = RuleProp[]
+ // 设置一个 type ，是一个 存放类型为 RuleProp 数据的数组，然后将其导出
+ export type RulesProp = RuleProp[]
 
-export default defineComponent({
-  name: 'ValidateInput',
-  props: {
-    // 这个是用于接收在父组件定义的规则
-    rules: Array as PropType<RulesProp>
-  },
-  setup (props) {
-    // interface 和 reactive 的区别
-    // reactive 和 ref ，都是创建数据, ref 是单个，reactive 是集中的一个对象
-    const inputRef = reactive({
-      val: '', // 文本框里输入的值
-      error: false, // 验证结果是否错误
-      message: '' // 验证错误时的提示信息
-    })
+ props: {
+   // 这个是用于接收在父组件定义的规则
+   rules: Array as PropType<RulesProp>
+   // 规则不是必传的    
+   // required: true
+ }
 
-    // 验证 Email 是否有效的正则表达式
-    const emailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-
+  setup (props, context) {
     const validateInput = () => {
-      // 需要循环遍历每一条规则，只有输入的值对每一条设定的规则都通过，才算通过。
-      if (props.rules) { // 如果有传过来的 props.rules
+      // 2. 需要循环遍历每一条规则，只有输入的值对每一条设定的规则都通过，才算通过。
+      if (props.rules) { // 因为规则不是必传的，因此如果有传过来的 props.rules
         const allPassed = props.rules.every(rule => {
           let passed = true
           // 可以直接设定显示的信息，因为用于显示信息的 dom 元素是根据  inputRef.error 显示的。如果通过的话，这个 dom 元素就不会显示。 
           inputRef.message = rule.message
 
-          switch (rule.type) {
+          switch (rule.type) { // 根据不同的规则类型，分别进行判断
             case 'required':
             // inputRef.val.trim() !== null 这个就不会执行？？为什么
               passed = (inputRef.val.trim() !== '')
@@ -1108,92 +955,34 @@ export default defineComponent({
           return passed
         })
         inputRef.error = !allPassed
+        return allPassed
       }
-    }
-
-    return {
-      inputRef,
-      validateInput
+      return true // 没有传入规则，则是任意输入值都可通过
     }
   }
-})
-</script>
-
-<style>
-</style>
-
 ```
 
-完整的父组件 Form.vue 代码
+父组件 Form.vue 传递验证规则
 
 ```JavaScript
-<template>
-    <form>
-    <div class="mb-3">
-        <label for="exampleInputEmail1" class="form-label">Email address</label>
-        // <input type="email" class="form-control" id="exampleInputEmail1"
-                v-model="emailRef.val"
-               @blur="validateEmail"
-        <validate-input :rules="emailRules"></validate-input>
-        // <div id="emailHelp" class="form-text" v-if="emailRef.error">{{emailRef.message}}</div> 
-    </div>
-    <div class="mb-3">
-        <label for="exampleInputPassword1" class="form-label">Password</label>
-        <input type="password" class="form-control" id="exampleInputPassword1">
-    </div>
-    </form>
-</template>
+<validate-input :rules="emailRules"></validate-input>
 
-<script lang="ts">
-import { defineComponent, reactive } from 'vue'
 import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
 
-export default defineComponent({
-  name: 'foRm',
-  components: {
-    ValidateInput
-  },
-  setup () {
-    const emailRules: RulesProp = [
-      { type: 'required', message: '电子邮箱地址不能为空' },
-      { type: 'email', message: '请输入正确的电子邮箱格式' }
-    ]
-    // 输入框里绑定了 v-model，v-model="emailRef.val"
-    // const emailRef = reactive({
-    //   val: '', // 文本框里输入的值
-    //   error: false, // 验证结果是否错误
-    //   message: '' // 验证错误时的提示信息
-    // })
+const emailRules: RulesProp = [ // 每一条数据都是 RulesProp 类型
+  { type: 'required', message: '电子邮箱地址不能为空' },
+  { type: 'email', message: '请输入正确的电子邮箱格式' }
+]
 
-    // // 验证 Email 是否有效的正则表达式
-    // const emailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-
-    // // 验证表单函数
-    // const validateEmail = () => {
-    //   if (emailRef.val.trim() === '') { // 是否输入为空
-    //     emailRef.error = true
-    //     emailRef.message = 'can not be empty'
-    //   } else if (!emailReg.test(emailRef.val)) { // 输入的 Email 格式是否正确
-    //     emailRef.error = true
-    //     emailRef.message = 'should be valid email'
-    //   }
-    // }
-    return {
-    //   emailRef,
-    //   validateEmail
-      emailRules
-    }
-  }
-})
-</script>
-
-<style>
-</style>
-
+return {
+  emailRules
+}
 ```
 
-### 自定义组件的 v-model 改造（父组件得到子组件传值）
-从而支持父组件拿到子组件的值，并且及时响应在父组件的界面上
+### 父组件得到子组件文本框的值（自定义组件的 v-model 改造）
+[vue3 改造 v-model](https://v3.cn.vuejs.org/guide/migration/v-model.html#v-model-%E5%8F%82%E6%95%B0)
+
+支持父组件拿到子组件的值，并且及时响应在父组件的界面上
 
 父组件里引入 ValidateInput.vue 的组件时，可以使用 v-model，从而可以在父组件获取得到子组件的文本框的值。
 
@@ -1211,68 +1000,71 @@ props: {
 context.emit('update:modelValue', targetValue)
 ```
 
-vue2 原生 v-model
-
-```JavaScript
-// 下面两行代码的功能一样
-<input v-model="val">
-<input :value="val" @input="val = $event.target.value">
-```
-
-vue3 compile 以后的结果
-
-```JavaScript
-<input v-model="foo">
-h(Comp, {
-    modelValue: foo,
-    'onUpdate: modelValue': value => (foo = values)
-})
-```
-
 #### 具体代码
-父组件里引入 ValidateInput.vue 的组件时，可以使用 v-model，从而可以在父组件获取得到子组件的文本框的值。
+
+父组件
 
 ```JavaScript
-<validate-input :rules="emailRules" v-model = 'emailVal'></validate-input>
-{{emailVal}}
+<template>
+  // v-model 相当于 :value 和 @input
+  <Son v-model="sonValue"></Son>
+  {{sonValue}}
+</template>
 
-const emailVal = ref('viking') // 因为是要响应式的，因此需要时 ref 类型
+<script lang="ts">
+// 拿到子组件 Son 的文本框的值
+import { defineComponent, ref } from 'vue'
+import Son from '@/components/Son.vue'
 
-return{
-    emailVal
-}
+export default defineComponent({
+  name: 'FatherVue',
+  components: {
+    Son
+  },
+  setup () {
+    const sonValue = ref('viking') // 因为是要响应式的，因此需要时 ref 类型
+    return {
+      sonValue
+    }
+  }
+})
+</script>
+
 ```
 
-自定义组件 ValidateInput.vue 
+子组件
 
 ```JavaScript
-// v-model="inputRef.val" 之前的这行去掉不用 
-<input type="email" class="form-control" id="exampleInputEmail1"
-       @blur="validateInput"
-       :value="inputRef.val"
-       @input="updateValue"
->
-// :value 和 @input
+<template>
+  <input type="text" :value="inputVal.val" @input="sendValue">
+</template>
 
-props: {
-  modelValue: String
-},
+<script lang="ts">
+// 拿到子组件 Son 的文本框的值
+import { defineComponent, PropType, reactive } from 'vue'
 
-const inputRef = reactive({
-  val: props.modelValue || '', // 接收的值设置为 props.modelValue，这是该组件里需要
-  error: false,
-  message: '' 
+export default defineComponent({
+  name: 'Son1Vue',
+  props: {
+    modelValue: String // 父组件的 v-model 传值
+  },
+  setup (props, context) {
+    const inputVal = reactive({
+      val: props.modelValue || ''
+    })
+    const sendValue = (e: KeyboardEvent) => { // 键盘输入事件
+      const targetValue = (e.target as HTMLInputElement).value
+      inputVal.val = targetValue
+      context.emit('update:modelValue', targetValue) // 传出事件
+    }
+    return {
+      inputVal,
+      sendValue
+    }
+  }
 })
+</script>
 
-const updateValue = (e: KeyboardEvent) => { // 键盘输入事件
-  const targetValue = (e.target as HTMLInputElement).value // 输入元素 HTMLInputElement
-  inputRef.val = targetValue
-  context.emit('update:modelValue', targetValue) // 事件名称为 'update:modelValue'，发送到父组件
-}
-
-return{
-    updateValue
-}
 ```
 
 ## attr
@@ -1286,8 +1078,9 @@ return{
 
 ![attr 添加到指定的 dom 节点](../project/Image/attr.png)
 
+子组件：
+
 ```JavaScript
-// 子组件
 // 1. v-bind="$attrs"
 <input type="email" class="form-control" id="exampleInputEmail1"
        @blur="validateInput"
@@ -1300,14 +1093,21 @@ return{
 setup(){
   inheritAttrs: false, // 不希望继承
 }
+```
 
+父组件：
+
+```JavaScript
 // 引用子组件的父节点上添加非 prop 属性，同时又不是 class/style 属性
+// 这里添加的属性是 placeholder="请输入邮箱"
 <validate-input :rules="emailRules" v-model="emailVal" placeholder="请输入邮箱"></validate-input>
 ```
 
 ### 插槽
 
 [插槽](https://cn.vuejs.org/v2/guide/components-slots.html#%E5%85%B7%E5%90%8D%E6%8F%92%E6%A7%BD)
+
+子组件：
 
 ```JavaScript
 // validateForm.vue
@@ -1324,7 +1124,11 @@ setup(){
     </div>
   </form>
 </template>
+```
 
+父组件：
+
+```JavaScript
 // 引用 validateForm.vue 的父组件
 // 3. v-slot:submit，简写是 #submit，这个是配合具名插槽使用
 <template v-slot:submit>
@@ -1365,69 +1169,42 @@ const updateValue = (e: KeyboardEvent) => {
 }
 ```
 
-### 父子组件通讯
+### 在父组件中访问子组件里定义的方法
+之前的 validateInput子组件 实现的功能是可以验证单个 input，每个单独的 input 都需要通过所有对其设置的所有规则。如果在一个父组件里引用了多个 validateInput子组件，需要循环验证每个 input 输入的值的有效性，并且将最终结果统一返回。
+
 在父组件 Form.vue 中拿到子组件 ValidateInput.vue 表单的验证结果
 
+![FormValidated](../project/Image/FormValidated.png)
+
+#### 访问子组件实例或子元素（dom节点）
+
+[访问子组件实例或子元素](https://cn.vuejs.org/v2/guide/components-edge-cases.html#%E8%AE%BF%E9%97%AE%E5%AD%90%E7%BB%84%E4%BB%B6%E5%AE%9E%E4%BE%8B%E6%88%96%E5%AD%90%E5%85%83%E7%B4%A0)，拿到子组件的实例后，就可以访问子组件上定义的方法。
+
+为什么要获取它的方法？？？？？
+
+1）通过 ref 获取同名的响应式对象
+2）
+
 ```JavaScript
-<template>
-    // form-validate 也是引入的子组件
-    <form-validate @form-submit="FromSubmit">
-        <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">Email address</label>
-            // 1. ref 等于的值 和 setup() 里 return 的保持一致 
-            <validate-input :rules="emailRules" v-model="emailVal" placeholder="请输入邮箱" ref="inputRef"></validate-input>
-        </div>
-        <div class="mb-3">
-            <label for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1">
-        </div>
-        <template #submit>
-            <button>提交1111</button>
-        </template>
-    </form-validate>
-</template>
+// 在父组件里获取引入的子组件实例：
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue'
-import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
-import FormValidate from '@/components/FormValidated.vue'
+// 1. ref 等于的值 和 setup() 里 return 的保持一致 
+<validate-input v-model="emailVal" ref="inputRef"></validate-input>
 
-export default defineComponent({
-  name: 'foRm',
-  components: {
-    ValidateInput,
-    FormValidate
-  },
   setup () {
-    // 2.设置一个类型为 any 的 ref 数据
+    // 2.设置一个 ref 数据
     const inputRef = ref<any>()
-    const emailVal = ref('viking')
-    const emailRules: RulesProp = [
-      { type: 'required', message: '电子邮箱地址不能为空' },
-      { type: 'email', message: '请输入正确的电子邮箱格式' }
-    ]
-    const FromSubmit = (result: boolean) => {
-      // 3. 在这里可以拿到 子组件 ValidateInput.vue 的 setup() 里返回的数据
-      console.log(inputRef.value.validateInput())
-      console.log('result', result)
-    }
+
     return {
-      emailRules,
-      emailVal,
-      FromSubmit,
-      // 4. 返回和 ref 同名的响应式对象
+      // 3. 返回和 ref 同名的响应式对象
       inputRef
     }
   }
-})
-</script>
 
-<style>
-</style>
-
+// 这样在父组件的 setup() 里可以添加函数，在函数里通过 inputRef.value 就可以获取子组件实例。
 ```
 
-<b>类似：返回和 ref 同名的响应式对象，就可以拿到对应的 dom 节点</b>
+<b>返回和 ref 同名的响应式对象，就可以拿到对应的 dom 节点</b>
 
 ```JavaScript
     // 1. 设置 ref 
@@ -1457,34 +1234,15 @@ export default defineComponent({
     }
 ```
 
-### 一个子组件 A 从父组件中获取 另一个子组件 B 的值 ???
-在 FormValidated.vue 组件中获取 
-
-[程序化的事件侦听器](https://cn.vuejs.org/v2/guide/components-edge-cases#%E7%A8%8B%E5%BA%8F%E5%8C%96%E7%9A%84%E4%BA%8B%E4%BB%B6%E4%BE%A6%E5%90%AC%E5%99%A8)
-
-在父组件中创建一个事件监听
+### A 子组件里 获取 B 子组件里定义的方法
 
 ```JavaScript
-const validateFuncArr = []
-this.$on('item-created', (func) => {
-    validateFuncArr.push(func)
-})
-```
-
-子组件
-
-```JavaScript
-// 和 $root 类似，$parent property 可以用来从一个子组件访问父组件的实例。
-this.$parent.emit('item-created', validateInput)
-```
-
-在这里，借用 mitt库 创建监听器
-
-在其中一个子组件 FormValidated.vue 中
-
-```JavaScript
+// 子组件 A ：ValidateForm.vue
+// 因为 slot 标签里可能存在多个 input，因此没法用一个数组或变量来定义。
+// slot 本身也不支持 ref 属性
 <template>
   <form class="validate-form-container">
+    // slot 标签   
     <slot name="default"></slot>
     <div class="submit-area" @click.prevent="submitForm">
       <slot name="submit">
@@ -1493,98 +1251,83 @@ this.$parent.emit('item-created', validateInput)
     </div>
   </form>
 </template>
+```
 
-<script lang="ts">
-import { defineComponent, onUnmounted } from 'vue'
+```JavaScript
+// 父组件里同时引入了 子组件 A（ValidateForm.vue）和 子组件 B（validateInput.vue）
+<validate-form @form-submit="onFormSubmit">
+  <div class="mb-3">
+    <label class="form-label">邮箱地址</label>
+    // 子组件 B 会插入到 子组件 A 的 slot 位置
+    <validate-input
+      :rules="emailRules" v-model="formData.email"
+      placeholder="请输入邮箱地址"
+      type="text"
+    />
+  </div>
+</validate-form>
+```
 
-// 1. 导入 mitt 库
+这个是在 A 子组件里 获取 B 子组件里的方法。由于 slot 的特殊性，因此需要利用 事件侦听器，但是在 vue3 中已经废弃了 $on， $once， $off等，因此需要借助外部的库如 mitt。
+
+[程序化的事件侦听器](https://cn.vuejs.org/v2/guide/components-edge-cases.html#%E7%A8%8B%E5%BA%8F%E5%8C%96%E7%9A%84%E4%BA%8B%E4%BB%B6%E4%BE%A6%E5%90%AC%E5%99%A8)
+
+1) 在子组件 A 中创建一个事件侦听器<br>
+2) 在子组件 B 中通过某种方法，往该侦听器中手动触发事件<br>
+
+在 子组件 A (FormValidated.vue) 中创建一个事件监听
+
+```JavaScript
+// 安装 mitt ；npm install --save mitt
+// 1. 引入
 import mitt from 'mitt'
 
-// 2. 新建一个监听器
-// 导出是因为要拿给 ValidateInput 使用
+// 2. 创建一个监听器
+// 因为需要拿给 B 子组件使用，因此需要 export
 export const emitter = mitt()
 
-export default defineComponent({
-  name: 'FormValidate',
-  emits: ['form-submit'], // 自定义发送事件
-  setup (props, context) {
-    const submitForm = () => {
-      console.log('点击了')
-      context.emit('form-submit', true)
-    }
-
-    // 3。创建回调函数
-    // const callback = (test: string) => {
-    //   console.log(test)
-    // }
-    // 上面这行会报错？？？为什么
+setup () {
     const callback = (test: string | any) => {
-      // 这里的 test 就是接收从别的组件传过来的值
-      console.log(test)
+        console.log(test)
     }
-
-    emitter.on('form-item-created', callback) // 自己创建的一个名称 form-item-created
-
-    // 4. 需要清理掉这个函数
+    emitter.on('form-item-created', callback) // 自定义名称 form-item-created
     onUnmounted(() => {
-      emitter.off('form-item-created', callback)
+        emitter.off('form-item-created', callback) // 即使清除
     })
-    // 5.然后去 ValidateInput 中发送信息
-    return {
-      submitForm
-    }
-  }
-})
-</script>
-
-<style>
-</style>
+}
 
 ```
 
-在另一个子组件 ValidateInput.vue 中
+在 子组件 B （validateInput.vue）中发送信息
 
 ```JavaScript
-<template>
-        <input type="email" class="form-control" id="exampleInputEmail1"
-               @blur="validateInput"
-               :value="inputRef.val"
-               @input="updateValue"
-               v-bind="$attrs"
-        >
-        <div id="emailHelp" class="form-text" v-if="inputRef.error">{{inputRef.message}}</div>
-</template>
+// 1. 导入监听器
+import { emitter } from './FormValidated.vue'
 
-<script lang="ts">
-import { defineComponent, reactive, PropType, onMounted } from 'vue'
-// 6.引入 FormValidated 里创建好的监听器
-import { emitter } from '@/components/FormValidated.vue'
+onMounted(() => {
+    emitter.emit('form-item-created', inputRef.val)
+})
 
- interface RuleProp {
-        type: 'required' | 'email';
-        message: string;
- }
-export type RulesProp = RuleProp[]
+```
 
-export default defineComponent({
-  name: 'ValidateInput',
-  props: {
-    rules: Array as PropType<RulesProp>,
-    modelValue: String
-  },
-  inheritAttrs: false,
-  setup (props, context) {
-    console.log('context.attrs', context.attrs)
-    const inputRef = reactive({
-      val: props.modelValue || '',
-      error: false, 
-      message: ''
-    })
+#### $parent
 
-    const emailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+```JavaScript
+// 和 $root 类似，$parent property 可以用来从一个子组件访问父组件的实例。
+this.$parent.emit('item-created', validateInput)
+```
+
+### 循环验证一个表单里的所有文本框
+1）在子组件 B 中，将验证函数的实体传递过去，即定义的验证方法<br>
+2）子组件 A 中，创立一个数组 funcArr，将 validate function 都放到数组里去<br>
+
+子组件 B （validateInput.vue）
+
+```JavaScript
+import { emitter } from './FormValidated.vue'
 
     const validateInput = () => {
-      if (props.rules) {
+      if (props.rules) { 
         const allPassed = props.rules.every(rule => {
           let passed = true
           inputRef.message = rule.message
@@ -1608,30 +1351,50 @@ export default defineComponent({
       return true
     }
 
-    const updateValue = (e: KeyboardEvent) => {
-      const targetValue = (e.target as HTMLInputElement).value
-      inputRef.val = targetValue
-      context.emit('update:modelValue', targetValue)
-    }
-
-    // 7.触发对应的事件
+    // 子组件 B 中将验证方法传递过去
     onMounted(() => {
-      // 发送的值是 inputRef.val
-      emitter.emit('form-item-created', inputRef.val)
+        emitter.emit('form-item-created', validateInput)
+    })
+```
+
+子组件 A （ValidateForm.vue）
+
+```JavaScript
+// 安装 mitt ；npm install --save mitt
+// 1. 引入
+import mitt from 'mitt'
+
+// 2. 创建一个监听器
+// 因为需要拿给 B 子组件使用，因此需要 export
+export const emitter = mitt()
+
+type ValidateFunc = () => boolean
+
+setup () {
+    let funcArr: ValidateFunc = [] // 存放一系列的函数，可以显示错误的信息，并且返回 input 是否通过
+
+    const callback = (func: ValidateFunc | any) => {
+        funcArr.push(func)
+    }
+    emitter.on('form-item-created', callback) // 自定义名称 form-item-created
+    onUnmounted(() => {
+        emitter.off('form-item-created', callback) // 即使清除
+        funcArr = []
     })
 
-    return {
-      inputRef,
-      validateInput,
-      updateValue
+    // 在点击 “提交” 的按钮时
+    // 循环调用所有方法，并且将方法得到的值返回
+    const submitForm = () => {
+    //  const result = funcArr.every(func => func())
+    // 因为 every 只要又一个是 false，就会提前终止循环，这样可能导致数组里的每个函数不会都运行一遍
+    // 为了让数组里的所有函数都运行一遍，并且都返回相应的结果
+    // map 会返回一个同等长度的数组
+      const result = funcArr.map(func => func()).every(res => res)
+
+      // 发送一个自定义的 form-submit 事件，并且将验证结果返回
+      context.emit('form-submit', result)
     }
-  }
-})
-</script>
-
-<style>
-</style>
-
+}
 ```
 
 ### ？？？？这个是啥
@@ -1756,13 +1519,6 @@ export default defineComponent({
 </style>
 
 ```
-
-
-### 点击按钮循环验证表单的每个 input 值
-比如说一个表单又账号, 密码等输入项，点击 “提交” 按钮，可以循环的验证表单的每个输入项。即验证整个表单，并且最后返回验证的结果。
-
-难点：验证包裹的 ValidateInput 组件的结果
-
 
 ## vue-Router 路由
 安装路由插件 npm install vue-router@next --save
@@ -2419,7 +2175,7 @@ export default defineComponent({
 
 ```
 
-### vuex action 发送异步请求
+### vuex action 发送异步请求（API）
 
 vuex 文档里规定了 mutation 必须是同步函数。所有的 api 请求都是异步的。
 
@@ -2463,6 +2219,23 @@ onMounted(() => {
 })
 ```
 
+### 组合 action
+[vuex 组合 action](https://vuex.vuejs.org/zh/guide/actions.html#%E7%BB%84%E5%90%88-action)
+
+场景：JWT，需要先调用 登录接口 获得 token 信息，然后再将 Token 信息传递，从而调用获取用户信息的接口。
+
+```JavaScript
+actions: {
+  async actionA ({ commit }) {
+    commit('gotData', await getData())
+  },
+  async actionB ({ dispatch, commit }) {
+    await dispatch('actionA') // 等待 actionA 完成
+    commit('gotOtherData', await getOtherData())
+  }
+}
+```
+
 ## axios
 ### baseURL
 ```JavaScript
@@ -2500,7 +2273,7 @@ axios.get('/columns', { params:{ key: 'hello' } }).then(res => {
 })
 ```
 
-## async & await
+### async & await
 改造异步请求。之前在 vuex 的时候，mutations 必须是同步函数，因此遇上异步函数的时候，需要使用 actions。
 
 在 promise 前面使用 await。
@@ -2567,7 +2340,7 @@ hello().then( value => console.log(value) )
     }
 ```
 
-### 使用 axios 拦截器添加 loading 效果
+## 使用 axios 拦截器添加 loading 效果
 在发送异步请求的时候，在界面上给用户一个提示，告诉用户数据正在提取中，请耐心等待。
 
 在 store.ts 文件里：
@@ -2646,9 +2419,9 @@ const getAndCommit = async (url: String, mutationName: String, commit: Commit){
     commit('setLoading', false)
 }
 // 发送 post 请求
-const getAndCommit = async (url: String, mutationName: String, commit: Commit){
+const postAndCommit = async (url: String, mutationName: String, commit: Commit, payload: any){
     commit('setLoading', true)
-    const { data } = await axios.post(url) 
+    const { data } = await axios.post(url, payload) 
     commit(mutationName, data)
     commit('setLoading', false)
 }
@@ -2683,3 +2456,205 @@ const getAndCommit = async (url: String, mutationName: String, commit: Commit){
 
 // 就不需要重复写注释掉的这两行代码了
 ```
+
+### loader 组件
+
+```JavaScript
+<template>
+    <teleport to="#back">
+    <div
+        class="d-flex justify-content-center align-items-center h-100 w-100 loading-container"
+        :style="{backgroundColor: background || ''}"
+    >
+        <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">{{ text || 'loading'}}</span>
+        </div>
+        <p v-if="text" class="text-primary small">{{text}}</p>
+        </div>
+    </div>
+    </teleport>
+</template>
+
+<script lang="ts">
+import { defineComponent, onUnmounted } from 'vue'
+
+export default defineComponent({
+  props: {
+    // 加载的时候显示的文字
+    text: {
+      type: String
+    },
+    // 背景颜色
+    background: {
+      type: String
+    }
+  },
+  setup () {
+    const node = document.createElement('div')
+    node.id = 'back'
+    document.body.appendChild(node)
+    onUnmounted(() => {
+      document.body.removeChild(node)
+    })
+  }
+})
+</script>
+
+<style>
+/* 半透明遮罩层 */
+.loading-container {
+  background: rgba(255, 255, 255, .5);
+  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+.loading-container {
+  text-align: center;
+}
+</style>
+
+```
+
+### 将 loader 组件渲染到另一个节点上
+loader 组件应该是一个全局的组件，但它在父组件里被引用时，查看控制台的 Element，可以看到它被包裹在其父节点下面。这样可以使用 teleport 解决。
+
+```JavaScript
+    <teleport to="#back">
+    </teleport>
+```
+
+因为是全局组件，因此可以在 index.html 里添加：
+
+```JavaScript
+  <div id="back"></div>
+```
+
+但这不是一个完美的解决办法。当用户想使用 loader 组件的时候，还需要去 html 上添加一个 div。
+
+### 在 body 中创建一个最底层的 div
+
+| 节点操作 | 代码|
+| :--: | :--: |
+| 新建节点 | const node = document.createElement('div') |
+| 设置节点属性（如id） | node.id = 'back' |
+| 将指定的DOM类型的节点加到document.body的末尾 | document.body.appendChild(node) |
+|  | var element = document.getElementById("div1");<br>element.appendChild(para); |
+| document.body上删除指定DOM节点 | document.body.removeChild(node) |
+|  | var list=document.getElementById("myList");<br>list.removeChild(list.childNodes[0]);|
+
+
+在组件还没完全渲染在 dom 之前，手动的创建一个 div，然后将其 id 设置成 back。<br>
+查看生命周期，可以看到 setup 是在 beforeCreate 和 created 附近执行的，这时组件还没有完全挂载到 dom 节点上。
+
+```JavaScript
+// 创建一个 div 节点 
+const node = document.createElement('div')
+node.id = 'back'
+document.body.appendChild(node)
+``` 
+
+创建的节点，要实现随着加载的完整，节点也消失。并且如果不删除该节点的话，没新进入一次该页面，就会创建一个新的 dom 节点。
+
+```JavaScript
+onUnmounted(() => {
+    document.body.removeChild(node)
+})
+```
+
+## 登录和获取用户信息
+
+登录成功后接口会返回一个 Token
+
+在 store.ts 文件里。
+
+```JavaScript
+// 因为函数前面加了 async
+// 返回的会是一个带有 data 参数的 Promise
+const postAndCommit = async (url: String, mutationName: String, commit: Commit, payload: any){
+    const { data } = await axios.post(url, payload) 
+    commit(mutationName, data)
+    return data
+}
+
+state: {
+    token: ''
+},
+mutations： {
+    login(state, rawData){
+        state.token = rawData.data.token
+    }
+},
+actions: {
+    login( { commit }, payload ) {
+        // 这里加 return 是为了测试什么？？？
+        return postAndCommit('/user/login', 'login', commit, payload)
+    }
+}
+```
+
+在 登录界面 处理整个登录的流程
+
+```JavaScript
+const onFormSubmit = (result: boolean) => { // 登录的邮箱和密码验证通过
+
+}
+```
+
+### 基于 Token 的验证机制原理
+基于 cookie Session 的解决方案。基于 cookie 的身份验证是有状态的，验证记录 或 会话 必须同时保存在服务器端和客户端，服务器端需要跟踪记录 Session 并且存至内存或数据库，同时前端在 cookie 中要保存对应的 sessionId 作为 Session 的唯一标识符。
+
+这个模式的问题是它的拓展性不好。假如只有多台服务器（一个服务器集群），这就要求 session 的数据共享，需要让每台服务器都读取到这个 session。一种解决方案就是 Session 的数据持久化，可以做一个持久层，将 数据 存储到持久层里。虽然架构清晰，但是工程量较大。并且万一持久层挂了，那么就会请求失败。
+
+![columnPost](./Image/cookie.png)
+
+token 将所有的信息都保存在客户端，每次请求，都将生成的 信息 发到服务器。
+
+![columnPost](./Image/token.png)
+
+### 登录流程
+1）login 接口的 api，返回的结果里获取 token <br>
+2）设置 header，设置一个通用的 header <br>
+3）user 接口获取用户信息
+
+![Config Defaults](https://github.com/axios/axios#config-defaults)
+
+```JavaScript
+axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+```
+
+store.ts 文件里
+
+```JavaScript
+const postAndCommit = (url: String, mutationName: String, commit: Commit) => {
+    const { data } = await axios.get(url) // await + Promise
+    commit(mutationName, res)
+}
+
+mutations: {
+    login(state, rawData){ // 修改 state 里的值
+        const { token } = rawData.token
+        state.token = token
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    },
+    fetchCurrentUser(state, rawData){
+        state.user = { isLogin: true, ...rawData.data }
+    }
+}
+actions: { // 异步函数
+    login( {commit} ){ // context.commit 可以调用 mutations 里面的方法
+        // 需要传入用户登录的信息，邮箱 和 密码 
+        postAndCommit('/user/login', 'login' , commit)
+    },
+    fetchCurrentUser(){}
+}
+```
+
+### 实现登录鉴权功能完整代码
+
+login.vue 
+
+```JavaScript
+```
+
