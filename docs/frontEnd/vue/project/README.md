@@ -1067,7 +1067,7 @@ export default defineComponent({
 
 ```
 
-## attr
+### attr
 [非 Prop 的 Attribute](https://cn.vuejs.org/v2/guide/components-props.html#%E9%9D%9E-Prop-%E7%9A%84-Attribute)
 
 [vue文档 禁用 Attribute 继承](https://cn.vuejs.org/v2/guide/components-props.html#%E7%A6%81%E7%94%A8-Attribute-%E7%BB%A7%E6%89%BF)
@@ -1310,13 +1310,6 @@ onMounted(() => {
 
 ```
 
-#### $parent
-
-```JavaScript
-// 和 $root 类似，$parent property 可以用来从一个子组件访问父组件的实例。
-this.$parent.emit('item-created', validateInput)
-```
-
 ### 循环验证一个表单里的所有文本框
 1）在子组件 B 中，将验证函数的实体传递过去，即定义的验证方法<br>
 2）子组件 A 中，创立一个数组 funcArr，将 validate function 都放到数组里去<br>
@@ -1370,36 +1363,59 @@ export const emitter = mitt()
 
 type ValidateFunc = () => boolean
 
-setup () {
-    let funcArr: ValidateFunc = [] // 存放一系列的函数，可以显示错误的信息，并且返回 input 是否通过
+export default defineComponent({
+    emits: ['form-submit'],
+    setup () {
+        let funcArr: ValidateFunc = [] // 存放一系列的函数，可以显示错误的信息，并且返回 input 是否通过
 
-    const callback = (func: ValidateFunc | any) => {
-        funcArr.push(func)
+        emitter.on('form-item-created', callback) // 自定义名称 form-item-created
+
+        const callback = (func: ValidateFunc | any) => {
+            funcArr.push(func)
+        }
+
+        onUnmounted(() => {
+            emitter.off('form-item-created', callback) // 即使清除
+            funcArr = []
+        })
+
+        // 点击 “提交” 按钮的时候，循环调用 每个 Input 传来的验证函数
+        const submitForm = () => {
+            //  const result = funcArr.every(func => func())
+            // 因为 every 只要又一个是 false，就会提前终止循环，这样可能导致数组里的每个函数不会都运行一遍
+            const result = funcArr.map(func => func()).every(res => res)
+
+            // 发送一个自定义的 form-submit 事件到父组件
+            context.emit('form-submit', result)
+        }
     }
-    emitter.on('form-item-created', callback) // 自定义名称 form-item-created
-    onUnmounted(() => {
-        emitter.off('form-item-created', callback) // 即使清除
-        funcArr = []
-    })
+})
 
-    // 在点击 “提交” 的按钮时
-    // 循环调用所有方法，并且将方法得到的值返回
-    const submitForm = () => {
-    //  const result = funcArr.every(func => func())
-    // 因为 every 只要又一个是 false，就会提前终止循环，这样可能导致数组里的每个函数不会都运行一遍
-    // 为了让数组里的所有函数都运行一遍，并且都返回相应的结果
-    // map 会返回一个同等长度的数组
-      const result = funcArr.map(func => func()).every(res => res)
-
-      // 发送一个自定义的 form-submit 事件，并且将验证结果返回
-      context.emit('form-submit', result)
-    }
-}
 ```
 
-### ？？？？这个是啥
+父组件接收发送的验证结果
 
-子组件 FormValidated.vue
+```JavaScript
+// @form-submit="FromSubmit"
+    <form-validate @form-submit="FromSubmit">
+        <div class="mb-3">
+            <label for="exampleInputEmail1" class="form-label">Email address</label>
+            <validate-input :rules="emailRules" v-model="emailVal" placeholder="请输入邮箱" ref="inputRef"></validate-input>
+        </div>
+        <template #submit> 
+            <button>提交1111</button>
+        </template>
+    </form-validate>
+
+// 可以打印接收到的验证结果
+    const FromSubmit = (result: boolean) => {
+      console.log('result', result)
+    }
+```
+
+### 表单组件的循环验证（完整代码）
+
+子组件 A （FormValidated.vue）
 
 ```JavaScript
 <template>
@@ -1415,36 +1431,20 @@ setup () {
 
 <script lang="ts">
 import { defineComponent, onUnmounted } from 'vue'
-
 import mitt from 'mitt'
 
 export const emitter = mitt()
 
-// 1. 创建一个函数，传入的参数为空，返回的值的类型是 boolean
 type validateFunc = () => boolean
 
 export default defineComponent({
   name: 'FormValidate',
   emits: ['form-submit'],
   setup (props, context) {
-    // 2. 存放一系列的函数，用来显示错误的信息并且返回这个 input 是否通过
     const funcArr: validateFunc[] = []
 
-    // 4. 循环调用 ValidateInput.vue 中的方法，并且返回所有结果的最终值
-    // 最后通过 emit 将事件发送出去
-    const submitForm = () => {
-      // 循环调用所有方法，并且将方法得到的值返回
-    //   const result = funcArr.every(func => func())
-    // 因为 every 只要又一个是 false，就会提前终止循环，这样可能导致数组里的每个函数不会都运行一遍
-    // 为了让数组里的所有函数都运行一遍，并且都返回相应的结果
-    // map 会返回一个同等长度的数组
-      const result = funcArr.map(func => func()).every(res => res)
-      context.emit('form-submit', result)
-    }
-
-    // 3. callback 接收的是一个 function，function 的类型是 validateFunc
     const callback = (func: validateFunc | any) => {
-      funcArr.push(func)
+      funcArr.push(func) // 将每个 Input 文本框传来的函数方法放进来
     }
 
     emitter.on('form-item-created', callback)
@@ -1452,6 +1452,13 @@ export default defineComponent({
     onUnmounted(() => {
       emitter.off('form-item-created', callback)
     })
+
+    // 点击 “提交” 按钮的时候，循环调用 每个 Input 传来的验证函数
+    const submitForm = () => {
+      const result = funcArr.map(func => func()).every(res => res)
+      context.emit('form-submit', result)
+    }
+
     return {
       submitForm
     }
@@ -1464,21 +1471,114 @@ export default defineComponent({
 
 ```
 
-父组件 Form.vue
+子组件 B （ValidateInput.vue）
+
+```JavaScript
+<template>
+        <input type="email" class="form-control" id="exampleInputEmail1"
+               @blur="validateInput"
+               :value="inputRef.val"
+               @input="updateValue"
+               v-bind="$attrs"
+        >
+        <div id="emailHelp" class="form-text" v-if="inputRef.error">{{inputRef.message}}</div>
+</template>
+
+<script lang="ts">
+import { emitter } from '@/components/FormValidated.vue'
+import { defineComponent, reactive, PropType, onMounted } from 'vue'
+
+ interface RuleProp {
+        type: 'required' | 'email';
+        message: string;
+ }
+
+export type RulesProp = RuleProp[]
+
+export default defineComponent({
+  name: 'ValidateInput',
+  props: {
+    // 这个是用于接收在父组件定义的规则
+    rules: Array as PropType<RulesProp>,
+    modelValue: String
+  },
+  inheritAttrs: false, // 不希望继承
+  setup (props, context) {
+    const inputRef = reactive({
+      val: props.modelValue || '',
+      error: false,
+      message: ''
+    })
+
+    // 验证 Email 是否有效的正则表达式
+    const emailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+
+    const validateInput = () => {
+      // 需要循环遍历每一条规则，只有输入的值对每一条设定的规则都通过，才算通过。
+      if (props.rules) { // 如果有传过来的 props.rules
+        const allPassed = props.rules.every(rule => {
+          let passed = true
+          inputRef.message = rule.message
+
+          switch (rule.type) {
+            case 'required':
+            // inputRef.val.trim() !== null 这个就不会执行
+              passed = (inputRef.val.trim() !== '')
+              break
+            case 'email':
+              passed = emailReg.test(inputRef.val)
+              break
+            default:
+              break
+          }
+          return passed
+        })
+        inputRef.error = !allPassed
+        return allPassed
+      }
+      return true
+    }
+
+    const updateValue = (e: KeyboardEvent) => { // 键盘输入事件
+      const targetValue = (e.target as HTMLInputElement).value // 输入元素 HTMLInputElement
+      inputRef.val = targetValue
+      context.emit('update:modelValue', targetValue) // 事件名称为 'update:modelValue'，发送到父组件
+    }
+
+    onMounted(() => {
+      emitter.emit('form-item-created', validateInput) // 将验证的方法传递过去
+    })
+
+    return {
+      inputRef,
+      validateInput,
+      updateValue
+    }
+  }
+})
+</script>
+
+<style>
+</style>
+
+```
+
+父组件 （Form.vue）
 
 ```JavaScript
 <template>
     <form-validate @form-submit="FromSubmit">
         <div class="mb-3">
             <label for="exampleInputEmail1" class="form-label">Email address</label>
-            <validate-input :rules="emailRules" v-model="emailVal" placeholder="请输入邮箱" ref="inputRef"></validate-input>
+            <validate-input :rules="emailRules" v-model="emailVal" placeholder="请输入邮箱"></validate-input>
         </div>
         <div class="mb-3">
             <label for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1">
+            <validate-input :rules="PasswordRules" v-model="PasswordVal" placeholder="请输入密码"></validate-input>
+            {{PasswordVal}}
         </div>
         <template #submit>
-            <button>提交1111</button>
+            <button>提交表单</button>
         </template>
     </form-validate>
 </template>
@@ -1495,21 +1595,24 @@ export default defineComponent({
     FormValidate
   },
   setup () {
-    const inputRef = ref<any>()
     const emailVal = ref('viking')
+    const PasswordVal = ref('')
     const emailRules: RulesProp = [
       { type: 'required', message: '电子邮箱地址不能为空' },
       { type: 'email', message: '请输入正确的电子邮箱格式' }
     ]
+    const PasswordRules: RulesProp = [
+      { type: 'required', message: '密码不能为空' }
+    ]
     const FromSubmit = (result: boolean) => {
-    // 5. 将相应的结果打印出来
-      console.log('result', result)
+      console.log('提交表单的验证结果result', result)
     }
     return {
       emailRules,
+      PasswordRules,
       emailVal,
-      FromSubmit,
-      inputRef
+      PasswordVal,
+      FromSubmit
     }
   }
 })
@@ -1619,7 +1722,11 @@ const router = useRouter() // 定义路由的一系列行为
 router.push({ name: 'column', params: { id: column.id }})
  ```
 
-#### 展示某个栏目下的文章列表
+### 展示某个栏目下的文章列表
+
+![文章列表](../project/Image/ColumnDetail.png)
+
+需要知道是哪个栏目下的，才能显示出相应的文章列表。路由上传来相应的栏目 ID，从路由上获取即可。
 
 父组件 ColumnDetail.vue
 
@@ -1653,7 +1760,7 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute()
-    const currentId = +route.params.id // route.params.id 获得的是一个 string 类型的值
+    const currentId = +route.params.id // route.params.id 获得的是一个 string 类型的值，前面加上 + 号，将其转换为 number 类型
 
     // 获取当前的栏目
     const column = testColumnData.find(c => c.id === currentId)

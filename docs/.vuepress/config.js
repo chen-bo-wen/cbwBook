@@ -117,8 +117,9 @@ module.exports = {
                 // "",
                 {
                     title: 'Javascript',
-                    collapsable: false,
+                    collapsable: true,
                     children: [
+                        { title: '面试1', path: '/Javascript/process/' },
                         { title: 'Javascript', path: '/Javascript/ku1/' },
                     ]
                 }
