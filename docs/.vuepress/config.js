@@ -18,6 +18,12 @@ module.exports = {
                         text: '语言', link: '/frontEnd/language', items: [
                             { text: 'typescript', link: '/frontEnd/language/typescript/' },
                         ]
+                    },
+                    {
+                        text: '其它', link: '/frontEnd/other', items: [
+                            { text: 'websocket', link: '/frontEnd/other/websocket/' },
+                            { text: 'Echarts', link: '/frontEnd/other/Echarts/' },
+                        ]
                     }
                 ]
             },
@@ -39,7 +45,8 @@ module.exports = {
                     {
                         text: '前端Javascript', items: [
                             { text: '题库1', link: '/Javascript/process/' },
-                            { text: '题库2', link: '/Javascript/ku1/' }
+                            { text: '数据结构与算法', link: '/Javascript/100/' },
+                            { text: '题库3', link: '/Javascript/ku1/' }
                         ]
                     }
                 ]
@@ -120,9 +127,16 @@ module.exports = {
                     collapsable: true,
                     children: [
                         { title: '面试1', path: '/Javascript/process/' },
+                        { title: '数据结构与算法', path: '/Javascript/100/' },
                         { title: 'Javascript', path: '/Javascript/ku1/' },
                     ]
                 }
+            ],
+            "/frontEnd/other/websocket/" : [
+                { title: '打造一个聊天室', path: 'chatRoom/' },
+            ],
+            "/frontEnd/other/Echarts/" : [
+                { title: 'vue+Echarts', path: 'Echarts/' },
             ],
         },
         sidebarDepth: 2

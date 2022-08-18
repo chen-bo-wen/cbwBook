@@ -1259,6 +1259,158 @@ const router = new VueRouter({
 component: () => import('./User.vue') 
 ```
 
+## vue 原理
+### 组件化 和 MVVM
+
+![MVVM](./Image/MVVM.png)
+
+M 对应 Model，V 对应 View，VM 对应 ViewModel。
+
+Model 可以理解为 data 里定义的数据，如：
+```JavaScript
+data(){
+    return {
+        list: ['a', 'b', 'c']
+    }
+}
+```
+
+View 可以理解为在 template 里的标签，如：
+```JavaScript
+<li v-for="(item, index) in list" :key="index">
+  {{item}}
+</li>
+```
+
+ViewModel，就是 View 可以通过如 @click等事件 去修改 Model 里的数据。同时所有涉及到 Model 修改的这一层也是 ViewModel 这一层。
+
+### Vue 响应式--Object.defineProperty
+监听 data 变化的核心 API：Object.defineProperty
+
+Object.defineProperty 存在一些缺陷，Vue3.0 使用 Proxy 进行了改写。但 Proxy 兼容性不好，且无法 polyfill。
+
+#### Object.defineProperty 基本使用
+```JavaScript
+const data = {}
+const name = '张三'
+Object.defineProperty(data, "name", {
+    get: function () {
+        console.log('get')
+        return name
+    },
+    set: function (newVal) {
+        console.log('set')
+        name = newVal
+    }
+})
+```
+
+```JavaScript
+console.log(data.name) // get
+data.name = '李四'     // set
+```
+
+#### 监听对象，监听数组
+```JavaScript
+npm i http-server -g
+http-server -p 8001  // 随意设置一个端口号名称，这里设置的是 8001
+```
+
+HTML 文件
+
+```JavaScript
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <title>Observe demo</title>
+</head>
+<body>
+    <p>响应式 demo</p>
+    // 引入 observe.js 文件
+    <script src="./observe.js"></script>
+</body>
+</html>
+```
+
+observe.js 文件
+
+```JavaScript
+// 触发更新视图
+function updateView() {
+    console.log('视图更新')
+}
+
+// 重新定义属性，监听起来
+function defineReactive(target, key, value) {
+    // 1. 深度监听
+    observer(value)
+
+    // 核心 API
+    Object.defineProperty(target, key, {
+        get() {
+            return value
+        },
+        set(newValue) {
+            if (newValue !== value) {
+                // 2. 深度监听，如果赋值的新值是对象的话
+                observer(newValue)
+
+                value = newValue
+                // 触发更新视图
+                updateView()
+            }
+        }
+    })
+}
+
+// 监听对象属性，observer 只是监听属性的入口。具体如何监听，是放在 defineReactive 函数里的
+function observer(target) {
+    if (typeof target !== 'object' || target === null) {
+        // 不是对象或数组
+        return target
+    }
+
+    // 重新定义各个属性（for in 可以遍历数组和对象）
+    for (let key in target) {
+        // 具体如何监听属性，是放 defineReactive 函数里的
+        defineReactive(target, key, target[key]) 
+    }
+}
+
+// 数据
+const data = {
+    name: 'zhangsan',
+    age: 20,
+    info: {
+        address: '北京' // 需要深度监听
+    },
+}
+
+// 监听数据，调用之前自定义的函数 observer
+observer(data)
+
+// 更改数据里的属性值
+data.name = 'lisi'
+data.age = 21 
+// 3. 深度监听
+data.info.address = '上海'
+
+```
+
+#### Object.defineProperty 缺陷
+1）深度监听，需要递归到底，一次性计算量大<br>
+2）新增属性或删除属性，监听不到，需要 Vue.set 或 Vue.delete 这两个 API 去完成<br>
+3)  Object.defineProperty 这个 API 不具备监听数组的能力
+
+### Vue 监听数组变化
+```JavaScript
+```
+
+#### 复杂对象，深度监听
+
 ## react
 ### react 组件如何通讯
 
